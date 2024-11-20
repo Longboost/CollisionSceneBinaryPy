@@ -236,17 +236,13 @@ def ImportFromDae(filePath: str, is_map_object: bool = False):
     myscene = collada.scene
     #settings = ImportSettings().IsMapObject = is_map_object
     
-    for node in myscene.nodes:
-        if node.name.startswith('MODELSPLIT'):
-            # model split stuff
-            pass
-        else:
-            # DEADBEEF model
-            ID = 0
-            newModel = csb.Model()
-            ImportNode(node, True)
-            newModel.Bounding.Compute(newModel.Positions)
-            csb.Models.insert(0, newModel)
+    node = myscene.nodes[0]
+    # DEADBEEF model
+    ID = 0
+    newModel = csb.Model()
+    ImportNode(node, True)
+    newModel.Bounding.Compute(newModel.Positions)
+    csb.Models.insert(0, newModel)
     #Export(csb, f'{filePath}.re.dae')
     #for obj in csb.Objects:
     #    print(obj.Name)
