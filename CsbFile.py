@@ -94,6 +94,8 @@ class CsbFile:
         
         byteOrder = '>' if bigEndian else '<'
         
+        epsilon = 1e-9
+        
         isVersion1 = True
         
         readOffset = 0
@@ -116,6 +118,8 @@ class CsbFile:
             assert array_equal(sphere_objects[i].Point2, sphere_objects[i].Point1)
             sphere_objects[i].Radius = unpack_from(f'{byteOrder}f', reader, offset=readOffset)[0]
             readOffset += 4
+            if sphere_objects[i].Radius < epsilon:
+                sphere_objects[i].Radius = 0
             sphere_objects[i].IsSphere = True
         
         num_box_objects = unpack_from(f'{byteOrder}I', reader, offset=readOffset)[0]
@@ -134,6 +138,7 @@ class CsbFile:
             assert array_equal(box_objects[i].Point2, box_objects[i].Point1)
             box_objects[i].Size = array(unpack_from(f'{byteOrder}3f', reader, offset=readOffset))
             readOffset += 12
+            box_objects[i].Size = [epsilon if x < epsilon else x for x in box_objects[i].Size]
             box_objects[i].Rotation = array(unpack_from(f'{byteOrder}3f', reader, offset=readOffset))
             readOffset += 12
             box_objects[i].BoxExtra = unpack_from(f'{byteOrder}9f', reader, offset=readOffset) #Always 0,0,1,0,0,0,0,1,0

@@ -8,6 +8,8 @@ import numpy as np
 from math import radians
 from scipy.spatial.transform import Rotation
 
+epsilon = 1e-9
+
 def DecomposeMatrix(matrix: np.ndarray) -> (list, list, list):
     # Extract translation
     translation = matrix[:3, 3]
@@ -59,10 +61,10 @@ def ImportFromDae(filePath: str, is_map_object: bool = False):
         newColObject.Point1 = newColObject.Point2 = t
         
         if isSphere:
-            newColObject.Radius = s[0]
+            newColObject.Radius = s[0] if s[0] > epsilon else epsilon
         else:
             newColObject.Rotation = r 
-            newColObject.Size = s
+            newColObject.Size = [x if x > epsilon else epsilon for x in s]
         
         newColObject.Name = node.name.split('_')
         newColObject.Name = newColObject.Name[2:]
