@@ -34,6 +34,8 @@ def ImportFromDae(filePath: str, is_map_object: bool = False):
     def getValues(materials: list):
         #try to detect the material and flags via material name
         identifiers = [None, None]
+        MaterialAttribute = 0
+        ColFlag = 0
         
         if materials:
             mat = materials[0].target.name
