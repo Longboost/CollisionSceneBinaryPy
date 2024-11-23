@@ -254,6 +254,7 @@ class CsbFile:
         for i in range(num_meshes):
             meshes[i].MaterialAttribute = attributes[i]
             meshes[i].NodeIndex  = mesh_node_ids[i]
+            
             if not meshes[i].NodeIndex in available_node_ids:
                 movenode = self.Nodes[negative_child_pos[0]]
                 self.Nodes.pop(negative_child_pos[0])
@@ -261,11 +262,23 @@ class CsbFile:
                 negative_child_pos.pop(0)
                 self.Nodes.append(movenode)
                 meshes[i].NodeIndex = movenode.ID
+            
             meshes[i].ColFlag = flag_array[i]
+
             
             meshes[i].Name = ReadZeroTerminatedString(reader, string_offset + name_offsets[i])
             #print(f"Mesh – {meshes[i].Name}")
         #print([x.ID for x in self.Nodes])
+        
+        # go back and fix broken node ids for objects now that we now what nodes exist
+        for i in range(len(self.Objects)):
+            if not self.Objects[i].NodeIndex in available_node_ids:
+                movenode = self.Nodes[negative_child_pos[0]]
+                self.Nodes.pop(negative_child_pos[0])
+                negative_child_pos = [x - 1 for x in negative_child_pos]
+                negative_child_pos.pop(0)
+                self.Nodes.append(movenode)
+                self.Objects[i].NodeIndex = movenode.ID
         
         num_models = 1 # There is only 1 combined model – DEADBEEF
         
@@ -380,6 +393,15 @@ class CsbFile:
                 assert models_split[i].Unknown0 == 1, (models_split[i].Unknown0, hex(readOffset))
                 readOffset += 4
                 models_split[i].NodeIndex = unpack_from(f'{byteOrder}H', reader, offset=readOffset)[0] #id
+                
+                if not models_split[i].NodeIndex in available_node_ids:
+                    movenode = self.Nodes[negative_child_pos[0]]
+                    self.Nodes.pop(negative_child_pos[0])
+                    negative_child_pos = [x - 1 for x in negative_child_pos]
+                    negative_child_pos.pop(0)
+                    self.Nodes.append(movenode)
+                    models_split[i].NodeIndex = movenode.ID
+                
                 readOffset += 2
                 readOffset += 2 # 0
                 

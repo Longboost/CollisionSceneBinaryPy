@@ -70,14 +70,25 @@ def LoadNode(node, parent, repeat):
     
     #print(index)
     
-    #find the model or mesh that links to this to label it
+    #find the model, mesh or mobj that links to this to label it
+    name = f"Node{currentIdx}"
+    
     model = next((x for x in csb.Models if x.NodeIndex == index), None)
     
-    name = f"Node{currentIdx}"
-    if len(csb.Models[0].Meshes) > 0 :
-        mesh = next((x for x in csb.Models[0].Meshes if x.NodeIndex == index), None)
-        if mesh != None:
-            name = f"{mesh.Name}"
+    if not model is None:
+        model.AbsoluteIndex = currentIdx - 1
+    
+    else:
+        obj = next((x for x in csb.Objects if x.NodeIndex == index), None)
+        
+        if not obj is None:
+            obj.AbsoluteIndex = currentIdx - 1
+        
+        elif len(csb.Models[0].Meshes) > 0 :
+            mesh = next((x for x in csb.Models[0].Meshes if x.NodeIndex == index), None)
+            if not mesh is None:
+                mesh.AbsoluteIndex = currentIdx - 1
+                name = f"{mesh.Name}"
     
     bone = scene.Node(id=name, children=[])
     
@@ -133,17 +144,17 @@ def Export(csb_in, filePath):
         #Add meshes as map objects
         iomesh, iomeshnode = SetupMesh(f"{type}_{obj.Name}", mat, [], [])
         iomodel.geometries.append(iomesh)
-        node_list[obj.NodeIndex].id = obj.Name
-        node_list[obj.NodeIndex].name = f'{type}_{obj.Name}'
-        node_list[obj.NodeIndex].children.append(iomeshnode)
-        node_list[obj.NodeIndex].children.append(scene.TranslateTransform(*obj.Point1))
-        node_list[obj.NodeIndex].children.append(scene.RotateTransform(0, 0, 1, degrees(obj.Rotation[2])))
-        node_list[obj.NodeIndex].children.append(scene.RotateTransform(0, 1, 0, degrees(obj.Rotation[1])))
-        node_list[obj.NodeIndex].children.append(scene.RotateTransform(1, 0, 0, degrees(obj.Rotation[0])))
-        node_list[obj.NodeIndex].children.append(scene.ScaleTransform(*obj.Size))
+        node_list[obj.AbsoluteIndex].id = obj.Name
+        node_list[obj.AbsoluteIndex].name = f'{type}_{obj.Name}'
+        node_list[obj.AbsoluteIndex].children.append(iomeshnode)
+        node_list[obj.AbsoluteIndex].children.append(scene.TranslateTransform(*obj.Point1))
+        node_list[obj.AbsoluteIndex].children.append(scene.RotateTransform(0, 0, 1, degrees(obj.Rotation[2])))
+        node_list[obj.AbsoluteIndex].children.append(scene.RotateTransform(0, 1, 0, degrees(obj.Rotation[1])))
+        node_list[obj.AbsoluteIndex].children.append(scene.RotateTransform(1, 0, 0, degrees(obj.Rotation[0])))
+        node_list[obj.AbsoluteIndex].children.append(scene.ScaleTransform(*obj.Size))
         
         if obj.IsSphere:
-            node_list[obj.NodeIndex].children[-1] = scene.ScaleTransform(obj.Radius, obj.Radius, obj.Radius)
+            node_list[obj.AbsoluteIndex].children[-1] = scene.ScaleTransform(obj.Radius, obj.Radius, obj.Radius)
     
     for idx, model in enumerate(csb.Models):
         if len(model.Meshes) > 0:
@@ -152,19 +163,19 @@ def Export(csb_in, filePath):
                 
                 iomesh, iomeshnode = SetupMesh(mesh.Name, mat, mesh.Triangles, mesh.Positions)
                 iomodel.geometries.append(iomesh)
-                node_list[mesh.NodeIndex].children.append(iomeshnode)
+                node_list[mesh.AbsoluteIndex].children.append(iomeshnode)
         elif len(model.Triangles) > 0:
             mat = SetupMaterial(model.MaterialAttribute, model.ColFlag)
             
             iomesh, iomeshnode = SetupMesh(model.Name, mat, model.Triangles, model.Positions)
             iomodel.geometries.append(iomesh)
-            node_list[model.NodeIndex].id = model.Name
-            node_list[model.NodeIndex].name = f'MODELSPLIT_{model.Name}'
-            node_list[model.NodeIndex].children.append(iomeshnode)
-            node_list[model.NodeIndex].children.append(scene.TranslateTransform(*model.Translate))
-            node_list[model.NodeIndex].children.append(scene.RotateTransform(0, 0, 1, degrees(model.Rotation[2])))
-            node_list[model.NodeIndex].children.append(scene.RotateTransform(0, 1, 0, degrees(model.Rotation[1])))
-            node_list[model.NodeIndex].children.append(scene.RotateTransform(1, 0, 0, degrees(model.Rotation[0])))
+            node_list[model.AbsoluteIndex].id = model.Name
+            node_list[model.AbsoluteIndex].name = f'MODELSPLIT_{model.Name}'
+            node_list[model.AbsoluteIndex].children.append(iomeshnode)
+            node_list[model.AbsoluteIndex].children.append(scene.TranslateTransform(*model.Translate))
+            node_list[model.AbsoluteIndex].children.append(scene.RotateTransform(0, 0, 1, degrees(model.Rotation[2])))
+            node_list[model.AbsoluteIndex].children.append(scene.RotateTransform(0, 1, 0, degrees(model.Rotation[1])))
+            node_list[model.AbsoluteIndex].children.append(scene.RotateTransform(1, 0, 0, degrees(model.Rotation[0])))
     iomodel.scenes.append(ioscene)
     iomodel.scene = ioscene
     iomodel.write(filePath)
