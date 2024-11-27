@@ -3,6 +3,11 @@ Based majorly off of https://github.com/KillzXGaming/CollisionSceneBinary – cr
 
 Exports Paper Mario: Sticker Star's .csb files to a workable .dae file, and allows that file to be reimported with appropiate octree data in a .ctb file. 
 
+**Setup:**
+
+- You will need [Python](https://www.python.org/) installed
+- To install this program's dependencies, run: `pip install -r requirements.txt`
+
 **Usage:**
 
 - To export to .dae:
