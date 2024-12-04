@@ -19,8 +19,9 @@ def SetupMaterial(attribute: int, flag: int, identifiers: list[int] = None):
         iomodel.materials.append(mat)
     return matnode
 
-def SetupMesh(name: str, mat: str, triangles: list, positions: list):
+def SetupMesh(mesh_idx: int, name: str, mat: str, triangles: list, positions: list):
     global iomodel
+
     vertsrc = positions
     normsrc = []
     idxsrc = []
@@ -43,15 +44,15 @@ def SetupMesh(name: str, mat: str, triangles: list, positions: list):
         normsrc.append(tri.Normal)
         normsrc.append(tri.Normal)
         normsrc.append(tri.Normal)
-    vertsrc = source.FloatSource("verts-array", np.array(vertsrc).ravel(), ('X', 'Y', 'Z'))
-    normsrc = source.FloatSource("normals-array", np.array(normsrc).ravel(), ('X', 'Y', 'Z'))
-    geom = geometry.Geometry(iomodel, name, name, [vertsrc, normsrc])
+    vertsrc = source.FloatSource(f"verts-array-{mesh_idx}", np.array(vertsrc).ravel(), ('X', 'Y', 'Z'))
+    normsrc = source.FloatSource(f"normals-array-{mesh_idx}", np.array(normsrc).ravel(), ('X', 'Y', 'Z'))
+    geom = geometry.Geometry(iomodel, f"{name}_geometry", name, [vertsrc, normsrc])
     
     #print(len(np.array(idxsrc).ravel()))
     idxsrc = np.array(idxsrc)
     input_list = source.InputList()
-    input_list.addInput(0, "VERTEX", "#verts-array")
-    input_list.addInput(1, "NORMAL", "#normals-array")
+    input_list.addInput(0, "VERTEX", f"#verts-array-{mesh_idx}")
+    input_list.addInput(1, "NORMAL", f"#normals-array-{mesh_idx}")
     
     #print(input_list.getList())
     triset = geom.createTriangleSet(idxsrc, input_list, mat.symbol)
@@ -116,6 +117,8 @@ def LoadNode(node, parent, repeat):
         parent.children.append(bone)
     
 def Export(csb_in, filePath):
+    mesh_idx = 0
+    
     global csb, node_list, iomodel, ioscene
     csb = csb_in
     ioscene = scene.Scene("scene", [])
@@ -142,7 +145,9 @@ def Export(csb_in, filePath):
         mat = SetupMaterial(0, obj.ColFlag, [obj.Identifier1, obj.Identifier2])
         
         #Add meshes as map objects
-        iomesh, iomeshnode = SetupMesh(f"{type}_{obj.Name}", mat, [], [])
+        iomesh, iomeshnode = SetupMesh(mesh_idx, f"{type}_{obj.Name}", mat, [], [])
+        mesh_idx += 1
+
         iomodel.geometries.append(iomesh)
         node_list[obj.AbsoluteIndex].id = obj.Name
         node_list[obj.AbsoluteIndex].name = f'{type}_{obj.Name}'
@@ -161,13 +166,17 @@ def Export(csb_in, filePath):
             for mesh in model.Meshes:
                 mat = SetupMaterial(mesh.MaterialAttribute, mesh.ColFlag)
                 
-                iomesh, iomeshnode = SetupMesh(mesh.Name, mat, mesh.Triangles, mesh.Positions)
+                iomesh, iomeshnode = SetupMesh(mesh_idx, mesh.Name, mat, mesh.Triangles, mesh.Positions)
+                mesh_idx += 1
+
                 iomodel.geometries.append(iomesh)
                 node_list[mesh.AbsoluteIndex].children.append(iomeshnode)
         elif len(model.Triangles) > 0:
             mat = SetupMaterial(model.MaterialAttribute, model.ColFlag)
             
-            iomesh, iomeshnode = SetupMesh(model.Name, mat, model.Triangles, model.Positions)
+            iomesh, iomeshnode = SetupMesh(mesh_idx, model.Name, mat, model.Triangles, model.Positions)
+            mesh_idx += 1
+
             iomodel.geometries.append(iomesh)
             node_list[model.AbsoluteIndex].id = model.Name
             node_list[model.AbsoluteIndex].name = f'MODELSPLIT_{model.Name}'
