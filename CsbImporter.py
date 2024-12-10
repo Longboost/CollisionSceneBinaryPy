@@ -236,11 +236,11 @@ def ImportFromDae(filePath: str, is_map_object: bool = False):
     myscene = collada.scene
     #settings = ImportSettings().IsMapObject = is_map_object
     
-    node = myscene.nodes[0]
     # DEADBEEF model
     ID = 0
     newModel = csb.Model()
-    ImportNode(node, True)
+    for node in myscene.nodes:
+        ImportNode(node, True)
     newModel.Bounding.Compute(newModel.Positions)
     csb.Models.insert(0, newModel)
     #Export(csb, f'{filePath}.re.dae')

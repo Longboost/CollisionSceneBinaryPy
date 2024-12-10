@@ -137,7 +137,8 @@ def Export(csb_in, filePath):
     
     #print([x.Name for x in csb.Nodes])
     #print()
-    LoadNode(csb.Nodes[0], None, False)
+    while len(node_list) < len(csb.Nodes):
+        LoadNode(csb.Nodes[currentIdx], None, False)
     
     for obj in csb.Objects:
         type = "MAPOBJ_SPHERE" if obj.IsSphere else "MAPOBJ_BOX"

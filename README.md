@@ -11,11 +11,12 @@ Exports Paper Mario: Sticker Star's .csb files to a workable .dae file, and allo
 **Usage:**
 
 - To export to .dae:
-  `main.py <filname>.csb`
+  `main.py <filename>.csb`
 
 - To import back into .csb and generate an associated .ctb:
-  `main.py <filname>.dae`
+  `main.py <filename>.dae`
 
 **Side Note:** 
 
-All meshes in the .dae file must be parented to a root mesh (it is typical convention to name this root mesh "A")
+
+While it is typical convention to parent all meshes to a root mesh named "A," it is not necessary for the collision model to work.
